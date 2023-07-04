@@ -54,6 +54,13 @@ def git_commits_after_date(date):
     lines = results.stdout.decode("utf-8").strip().split("\n")
     return [line for line in lines if line!="None"]
 
+def git_commits_all():
+    results = subprocess.run(["git", "log", "--oneline"], capture_output=True)
+    check_stderr(results.stderr)
+
+    lines = results.stdout.decode("utf-8").strip().split("\n")
+    return [line for line in lines if line!="None"]
+
 def bump_version(new_commits, original_version):
     (major, minor, patch) = original_version
     for commit in new_commits:
@@ -109,20 +116,24 @@ if __name__ == "__main__":
             raise Exception("csproj not found")
         
         tags = get_git_tags()
-        last_tag = tags [-1]
-        
-        last_tag_block = get_last_tag_block(last_tag)
-        
-        new_commits = git_commits_after_date(last_tag_block["date"])
-        new_commits = list(reversed(new_commits))
+        if len(tags == 0):
+            [major, minor, patch] = (0,1,0)
+            new_commits = git_commits_all()
+            new_commits = list(reversed(new_commits))
+        else:
+            last_tag = tags [-1]
+            
+            last_tag_block = get_last_tag_block(last_tag)
+            last_version = last_tag_block["version"]
+            [major, minor, patch] = last_version.replace("v", "").split(".")
+            
+            new_commits = git_commits_after_date(last_tag_block["date"])
+            new_commits = list(reversed(new_commits))
         
         if len(new_commits) == 0:
             sys.exit() 
-        
-        last_version = last_tag_block["version"]
-        [major, minor, patch] = last_version.replace("v", "").split(".")
 
-        initial_version = major, minor, patch = 0,1,0
+        initial_version = major, minor, patch
         
         # loop over each commit, updating the build
         new_version = bump_version(new_commits, initial_version)
