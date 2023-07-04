@@ -116,7 +116,7 @@ if __name__ == "__main__":
             raise Exception("csproj not found")
         
         tags = get_git_tags()
-        if len(tags == 0):
+        if len(tags) == 0:
             [major, minor, patch] = (0,1,0)
             new_commits = git_commits_all()
             new_commits = list(reversed(new_commits))
