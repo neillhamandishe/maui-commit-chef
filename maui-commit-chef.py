@@ -141,5 +141,5 @@ if __name__ == "__main__":
         if new_version != initial_version:
             new_cs_proj = generate_csproj(csproj_path, new_version)
             write_cs_proj(new_cs_proj, csproj_path)
-    except:
-        sys.exit("Failed to run Maui commit chef")
+    except Exception as e:
+        sys.exit(f"Failed to run Maui commit chef {e}")
